@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loadgen
+  namespace: netchaos
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: hey
+          image: rakyll/hey:latest
+          args: ["-z", "45s", "-c", "25", "http://frontend-svc:8080/api/api/compute?n=60000"]

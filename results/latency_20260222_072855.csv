@@ -1,0 +1,11 @@
+label,idx,time_total_s,http_code
+latency,1,0.617057,200
+latency,2,0.694112,200
+latency,3,0.655783,200
+latency,4,0.628467,200
+latency,5,0.632523,200
+latency,6,0.583296,200
+latency,7,0.613245,200
+latency,8,0.490973,200
+latency,9,0.527424,200
+latency,10,0.531577,200

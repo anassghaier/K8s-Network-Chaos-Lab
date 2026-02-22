@@ -1,0 +1,11 @@
+label,idx,time_total_s,http_code
+baseline,1,0.048472,200
+baseline,2,0.035745,200
+baseline,3,0.032924,200
+baseline,4,0.035785,200
+baseline,5,0.036240,200
+baseline,6,0.034175,200
+baseline,7,0.040781,200
+baseline,8,0.034380,200
+baseline,9,0.040839,200
+baseline,10,0.038291,200

@@ -1,0 +1,11 @@
+label,idx,time_total_s,http_code
+recovery,1,0.030880,200
+recovery,2,0.035944,200
+recovery,3,0.035974,200
+recovery,4,0.035036,200
+recovery,5,0.047553,200
+recovery,6,0.037104,200
+recovery,7,0.032005,200
+recovery,8,0.035510,200
+recovery,9,0.033935,200
+recovery,10,0.032869,200

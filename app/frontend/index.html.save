@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>K8s Network Chaos Project — TP Network and Cloud (Master 2 TRT)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#111a2e;
+      --panel2:#0e1730;
+      --txt:#e8eefc;
+      --muted:#aab7df;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --ok:#00e5a8;
+      --warn:#ffb020;
+      --bad:#ff4d6d;
+      --info:#58a6ff;
+      --chip:#182447;
+      --glow: 0 0 0 1px rgba(255,255,255,.08), 0 16px 50px rgba(0,0,0,.55);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--txt);
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(88,166,255,.25), transparent 55%),
+        radial-gradient(1000px 600px at 90% 0%, rgba(0,229,168,.18), transparent 55%),
+        radial-gradient(900px 550px at 60% 120%, rgba(255,77,109,.14), transparent 55%),
+        linear-gradient(180deg, #050914, #070c18 45%, #070c18);
+      min-height:100vh;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 40px}
+    .top{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .title{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    .title h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:.2px;
+      display:flex;gap:10px;align-items:center;
+    }
+    .k8s-badge{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:34px;height:34px;border-radius:12px;
+      background:linear-gradient(180deg, rgba(88,166,255,.25), rgba(88,166,255,.06));
+      border:1px solid var(--border);
+      box-shadow: var(--glow);
+    }
+    .subtitle{color:var(--muted);font-size:14px}
+    .rightchips{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      background:rgba(24,36,71,.75);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:8px 12px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;gap:8px;align-items:center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--info);box-shadow:0 0 0 6px rgba(88,166,255,.12)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(17,26,46,.92), rgba(14,23,48,.92));
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-header{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+    }
+    .card-header h2{
+      margin:0;font-size:14px;letter-spacing:.3px;color:#dfe7ff;text-transform:uppercase;
+    }
+    .card-body{padding:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{
+      appearance:none;border:0;
+      padding:10px 12px;border-radius:12px;
+      background:linear-gradient(180deg, rgba(88,166,255,.26), rgba(88,166,255,.10));
+      border:1px solid rgba(88,166,255,.35);
+      color:var(--txt);
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:.2px;
+      transition: transform .06s ease, filter .12s ease;
+      box-shadow: 0 12px 28px rgba(88,166,255,.10);
+    }
+    .btn:hover{filter:brightness(1.06)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:none;
+    }
+    .btn.danger{
+      background:linear-gradient(180deg, rgba(255,77,109,.25), rgba(255,77,109,.10));
+      border:1px solid rgba(255,77,109,.40);
+      box-shadow: 0 12px 28px rgba(255,77,109,.10);
+    }
+    .btn.ok{
+      background:linear-gradient(180deg, rgba(0,229,168,.20), rgba(0,229,168,.07));
+      border:1px solid rgba(0,229,168,.42);
+      box-shadow: 0 12px 28px rgba(0,229,168,.10);
+    }
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:680px){
+      .split{grid-template-columns:1fr}
+    }
+    .metric{
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
+    }
+    .metric .label{color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:10px}
+    .metric .value{font-size:24px;margin-top:6px;font-weight:800;letter-spacing:.3px}
+    .metric small{color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.12);
+      font-size:12px;color:var(--muted);
+      white-space:nowrap;
+    }
+    .pill b{color:#fff;font-weight:800}
+    .status{
+      display:flex;align-items:center;gap:10px;
+      padding:12px 14px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.14);
+    }
+    .badge{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:7px 10px;border-radius:999px;font-weight:900;font-size:12px;
+      border:1px solid rgba(255,255,255,.14);
+      letter-spacing:.3px;
+    }
+    .b-ok{background:rgba(0,229,168,.14);border-color:rgba(0,229,168,.35);color:#b7ffe9}
+    .b-warn{background:rgba(255,176,32,.16);border-color:rgba(255,176,32,.40);color:#ffe0ac}
+    .b-bad{background:rgba(255,77,109,.16);border-color:rgba(255,77,109,.45);color:#ffc0cc}
+    .b-info{background:rgba(88,166,255,.16);border-color:rgba(88,166,255,.40);color:#cfe5ff}
+    .lamp{
+      width:12px;height:12px;border-radius:999px;
+      background:var(--info);
+      box-shadow: 0 0 0 6px rgba(88,166,255,.12), 0 0 20px rgba(88,166,255,.35);
+      flex:0 0 auto;
+    }
+    .lamp.ok{background:var(--ok); box-shadow:0 0 0 6px rgba(0,229,168,.12), 0 0 20px rgba(0,229,168,.30)}
+    .lamp.warn{background:var(--warn); box-shadow:0 0 0 6px rgba(255,176,32,.12), 0 0 20px rgba(255,176,32,.28)}
+    .lamp.bad{background:var(--bad); box-shadow:0 0 0 6px rgba(255,77,109,.12), 0 0 20px rgba(255,77,109,.30)}
+    .bar{
+      height:12px;border-radius:999px;
+      background:rgba(255,255,255,.10);
+      overflow:hidden;border:1px solid rgba(255,255,255,.10);
+      margin-top:10px;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(0,229,168,.85), rgba(255,176,32,.90), rgba(255,77,109,.92));
+      transition: width .25s ease;
+    }
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;padding:0 10px}
+    td{
+      padding:10px 10px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    tr td:first-child{border-radius:12px 0 0 12px}
+    tr td:last-child{border-radius:0 12px 12px 0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .tiny{font-size:12px;color:var(--muted)}
+    .footer{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    .hint{
+      border-left:3px solid rgba(88,166,255,.55);
+      padding:10px 12px;
+      background:rgba(88,166,255,.08);
+      border-radius:12px;
+      color:#cfe5ff;
+      margin-top:12px;
+      font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+<!-- LOGO UNIVERSITÉ -->
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+  <img src="assets/uge.jpeg"
+       alt="Université Gustave Eiffel"
+       style="height:60px;" />
+  <div>
+    <div style="font-size:15px; opacity:0.85;">
+      Université Gustave Eiffel
+    </div>
+    <div style="font-size:13px; opacity:0.6;">
+      Master 2 — Network & Cloud
+    </div>
+  </div>
+</div>
+
+<!-- TITRE EXISTANT -->
+  <span class="k8s-badge" aria-hidden="true">☸</span>
+  K8s Network Chaos Lab — Live Demo
+</h1>
+        <h1>
+          <span class="k8s-badge" aria-hidden="true">⎈</span>
+          K8s Network Chaos Lab — Live Demo
+        </h1>
+      <p class="subtitle">ANAS SGHAIER — Practical work: Network &amp; Cloud — Université Gustave Eiffel</p>
+        <div class="subtitle">
+          Frontend ➜ <span class="mono">/api/compute?n=60000</span> ➜ Backend (measuring end-to-end user impact)
+        </div>
+      </div>
+
+      <div class="rightchips">
+        <div class="chip"><span class="dot"></span> Cluster: <b style="color:#fff">kind</b></div>
+        <div class="chip"><span class="dot" style="background:var(--ok);box-shadow:0 0 0 6px rgba(0,229,168,.12)"></span> Namespace: <b style="color:#fff">netchaos</b></div>
+        <div class="chip"><span class="dot" style="background:var(--warn);box-shadow:0 0 0 6px rgba(255,176,32,.12)"></span> Focus: <b style="color:#fff">Network Chaos</b></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Live control + status -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Live Observability</h2>
+          <span class="pill">SLA target: <b>&lt; 250ms</b> (warning &gt; 300ms, critical &gt; 700ms)</span>
+        </div>
+        <div class="card-body">
+          <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="status" style="flex:1;min-width:260px">
+              <span id="lamp" class="lamp" aria-hidden="true"></span>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <span id="badge" class="badge b-info">READY</span>
+                  <span class="tiny">KO effect is visible when latency/loss increases</span>
+                </div>
+                <div class="tiny">Tip: run chaos scripts, then click “Call API” or “Start Auto”.</div>
+              </div>
+            </div>
+
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn ok" onclick="callApi()">Call API</button>
+              <button class="btn" onclick="startAuto()">Start Auto</button>
+              <button class="btn danger" onclick="stopAuto()">Stop</button>
+              <button class="btn secondary" onclick="clearTable()">Clear</button>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="metric">
+              <div class="label">
+                <span>Last response time</span>
+                <span class="pill mono" id="lastCode">HTTP —</span>
+              </div>
+              <div class="value mono" id="lastMs">— ms</div>
+              <small id="lastNote">Waiting for first request…</small>
+              <div class="bar"><div class="fill" id="slaFill"></div></div>
+            </div>
+
+            <div class="metric">
+              <div class="label">
+                <span>KO Impact Score</span>
+                <span class="pill"><b id="koScore">0</b>/100</span>
+              </div>
+              <div class="value" id="koLabel">NORMAL</div>
+              <small id="koExplain">No visible degradation yet.</small>
+              <div class="hint">
+                Score uses latency + errors + timeout ratio. Under chaos, it should spike.
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Elapsed</th>
+                  <th>HTTP</th>
+                  <th>Status</th>
+                  <th>API (preview)</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+
+            <div class="footer">
+              <div>Endpoint: <span class="mono">/api/compute?n=60000</span></div>
+              <div class="mono" id="autoState">auto: OFF</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Architecture + explanation -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Architecture & Demo Plan</h2>
+          <span class="badge b-info">Micro-Lab</span>
+        </div>
+        <div class="card-body">
+          <div class="metric" style="margin-bottom:12px">
+            <div class="label"><span>Flow</span><span class="pill">User ➜ Frontend ➜ API</span></div>
+            <div class="value" style="font-size:16px;margin-top:10px;line-height:1.35">
+              <span class="badge b-info">frontend-svc</span>
+              <span style="opacity:.7"> calls </span>
+              <span class="badge b-info">api-svc</span>
+              <span style="opacity:.7"> (compute) </span>
+            </div>
+            <div class="tiny" style="margin-top:8px">
+              Chaos injection targets the API pod networking (<span class="mono">tc netem</span>) to create visible user impact.
+            </div>
+          </div>
+
+          <div class="metric">
+            <div class="label"><span>Recommended live sequence (15 min)</span><span class="pill">before → during → after</span></div>
+            <div class="tiny" style="margin-top:10px;line-height:1.6">
+              1) Baseline: click <b>Call API</b> (NORMAL) <br/>
+              2) Apply chaos (loss/latency) via scripts <br/>
+              3) Observe SLA breach & KO score spike <br/>
+              4) Remove chaos → recovery (NORMAL) <br/>
+              5) Show captured evidence (CSV / logs)
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:12px">
+            If you want a stronger visual KO effect: apply <b>latency</b> (adds >250ms) + click Auto (10–15 calls).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Tuning thresholds ----------
+    const SLA_TARGET = 250; // ms
+    const WARN_MS = 300;
+    const CRIT_MS = 700;
+
+    // ---------- State ----------
+    let seq = 0;
+    let timer = null;
+    let lastKO = 0;
+
+    function setStatus(level, text){
+      const badge = document.getElementById('badge');
+      const lamp = document.getElementById('lamp');
+
+      badge.className = 'badge ' + (level==='ok'?'b-ok':level==='warn'?'b-warn':level==='bad'?'b-bad':'b-info');
+      lamp.className  = 'lamp ' + (level==='ok'?'ok':level==='warn'?'warn':level==='bad'?'bad':'');
+
+      badge.textContent = text;
+    }
+
+    function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+    function updateSLA(elapsed){
+      const fill = document.getElementById('slaFill');
+      // 0% at 0ms, 100% at 1000ms
+      const pct = clamp((elapsed/1000)*100, 0, 100);
+      fill.style.width = pct + '%';
+    }
+
+    function computeKO(elapsed, httpCode){
+      // 0..100 based on latency, errors, timeouts
+      let score = 0;
+
+      // latency contribution
+      if (elapsed <= SLA_TARGET) score += 5;
+      else if (elapsed <= WARN_MS) score += 25;
+      else if (elapsed <= CRIT_MS) score += 55;
+      else score += 75;
+
+      // error contribution
+      if (httpCode >= 500) score += 25;
+      if (httpCode === 0) score += 35; // fetch failed / timeout
+
+      return clamp(score, 0, 100);
+    }
+
+    function explainKO(score){
+      if (score < 15) return {label:'NORMAL', level:'ok', msg:'Service is healthy. No visible degradation.'};
+      if (score < 50) return {label:'DEGRADED', level:'warn', msg:'User experience is impacted (SLA drift).' };
+      return {label:'CHAOS IMPACT', level:'bad', msg:'Strong KO effect: noticeable latency/loss/errors.'};
+    }
+
+    function safePreview(obj){
+      try{
+        const s = JSON.stringify(obj);
+        return s.length > 120 ? (s.slice(0,120) + '…') : s;
+      }catch(e){
+        return '—';
+      }
+    }
+
+    async function callApi(){
+      const lastMs = document.getElementById('lastMs');
+      const lastCode = document.getElementById('lastCode');
+      const lastNote = document.getElementById('lastNote');
+
+      setStatus('info','CALLING…');
+      lastNote.textContent = 'Calling backend…';
+
+      const start = performance.now();
+      let httpCode = 0;
+      let data = null;
+
+      try{
+        const res = await fetch('/api/compute?n=60000', { cache: 'no-store' });
+        httpCode = res.status;
+        data = await res.json();
+      }catch(e){
+        httpCode = 0;
+        data = { error: 'fetch_failed' };
+      }
+
+      const elapsed = Math.round(performance.now() - start);
+
+      // Update headline metrics
+      lastMs.textContent = elapsed + ' ms';
+      lastCode.textContent = 'HTTP ' + (httpCode || '—');
+      updateSLA(elapsed);
+
+      // KO score + label
+      const score = computeKO(elapsed, httpCode);
+      lastKO = score;
+      const ex = explainKO(score);
+
+      document.getElementById('koScore').textContent = String(score);
+      document.getElementById('koLabel').textContent = ex.label;
+      document.getElementById('koExplain').textContent = ex.msg;
+
+      // Status badge
+      if (httpCode === 0) setStatus('bad','ERROR');
+      else setStatus(ex.level, ex.label);
+
+      if (elapsed <= SLA_TARGET) lastNote.textContent = '✅ Within SLA';
+      else if (elapsed <= WARN_MS) lastNote.textContent = '⚠️ Slightly above SLA';
+      else if (elapsed <= CRIT_MS) lastNote.textContent = '🟠 Degraded UX (noticeable)';
+      else lastNote.textContent = '🔴 Severe impact (KO effect)';
+
+      // Table row
+      seq += 1;
+      const tbody = document.getElementById('rows');
+      const tr = document.createElement('tr');
+
+      const statusText = (httpCode===0) ? 'FETCH_FAIL' : ex.label;
+      const statusBadge =
+        (httpCode===0) ? '<span class="badge b-bad">ERROR</span>' :
+        (ex.level==='ok') ? '<span class="badge b-ok">OK</span>' :
+        (ex.level==='warn') ? '<span class="badge b-warn">WARN</span>' :
+        '<span class="badge b-bad">BAD</span>';
+
+      tr.innerHTML = `
+        <td class="mono">${seq}</td>
+        <td class="mono">${elapsed} ms</td>
+        <td class="mono">${httpCode || '—'}</td>
+        <td>${statusBadge} <span class="tiny">${statusText}</span></td>
+        <td class="mono tiny">${safePreview(data)}</td>
+      `;
+      tbody.prepend(tr);
+    }
+
+    function startAuto(){
+      if (timer) return;
+      document.getElementById('autoState').textContent = 'auto: ON (1 req/sec)';
+      timer = setInterval(callApi, 1000);
+    }
+
+    function stopAuto(){
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+      document.getElementById('autoState').textContent = 'auto: OFF';
+      setStatus('info','READY');
+    }
+
+    function clearTable(){
+      document.getElementById('rows').innerHTML = '';
+      seq = 0;
+      setStatus('info','READY');
+      document.getElementById('lastMs').textContent = '— ms';
+      document.getElementById('lastCode').textContent = 'HTTP —';
+      document.getElementById('lastNote').textContent = 'Waiting for first request…';
+      document.getElementById('koScore').textContent = '0';
+      document.getElementById('koLabel').textContent = 'NORMAL';
+      document.getElementById('koExplain').textContent = 'No visible degradation yet.';
+      document.getElementById('slaFill').style.width = '0%';
+    }
+
+    // Initial state
+    setStatus('info','READY');
+  </script>
+</body>
+</html>
