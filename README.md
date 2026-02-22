@@ -277,12 +277,4 @@ By combining **Docker, Kubernetes, Linux networking tools and Chaos Engineering*
 
 ---
 
-📌 *This project was developed for academic and educational purposes and can serve as a foundation for further experiments such as packet loss, jitter or multi-service chaos scenarios.*
-
-```
-
----
-
-
-Dis-moi 👍
-```
+ *This project was developed for academic and educational purposes and can serve as a foundation for further experiments such as packet loss, jitter or multi-service chaos scenarios.*
