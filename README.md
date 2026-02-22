@@ -146,7 +146,7 @@ bash 10-measure.sh baseline
 * CSV generated
 
   
-               ![Baseline dashboard](docs/dashboard-baseline.png)
+  ![Baseline dashboard](docs/dashboard-baseline.png)
 This dashboard shows the system under normal network conditions before any chaos injection.
 ---
 
