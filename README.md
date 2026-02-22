@@ -144,7 +144,7 @@ bash 10-measure.sh baseline
 * Latency ≈ **30 ms**
 * SLA respected
 * CSV generated
-
+![Baseline dashboard](docs/dashboard-baseline.png)
 ---
 
 ### Chaos — Network Latency Injection
