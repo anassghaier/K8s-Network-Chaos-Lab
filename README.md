@@ -69,16 +69,12 @@ Network Chaos (tc netem on API Pod)
 
 ## 📁 Repository Structure
 
-```
-
 K8s-Network-Chaos-Lab/
-│
 ├── app/        # Frontend & API source code
 ├── k8s/        # Kubernetes manifests
 ├── scripts/    # Automation & chaos scripts
 ├── results/    # CSV measurements
 └── README.md
-
 ````
 
 ---
