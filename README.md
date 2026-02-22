@@ -147,6 +147,7 @@ bash 10-measure.sh baseline
 
   
 ![Baseline dashboard](docs/dashboard-baseline.png)
+
 This dashboard shows the system under normal network conditions before any chaos injection.
 ---
 
@@ -169,6 +170,11 @@ Observed effects:
 * SLA violation
 * Degraded user experience
 
+  
+![Chaos dashboard](docs/dashboard-chaos.png)
+
+This dashboard shows the system behavior **during network latency injection**.
+The response time increases significantly and the SLA is violated.
 ---
 
 ### Recovery — Chaos Removal
@@ -181,7 +187,11 @@ bash 10-measure.sh recovery
 * No redeployment required
 * Network conditions restored
 * System stability preserved
+  
+![Recovery dashboard](docs/dashboard-recovery.png)
 
+This dashboard shows the system state **after removing network chaos**.
+The system recovers **without redeployment** and performance returns to normal.
 ---
 
 ## 📈 Results Summary
@@ -194,6 +204,10 @@ bash 10-measure.sh recovery
 
 All measurements are exported as **CSV files** for offline analysis.
 
+![CSV results](docs/csv-results.png)
+
+This screenshot confirms the generation of **CSV measurement files**
+for baseline, chaos and recovery phases, enabling offline analysis.
 ---
 
 ## ✅ Key Learning Outcomes
