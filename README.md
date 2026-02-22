@@ -188,7 +188,7 @@ bash 10-measure.sh recovery
 * Network conditions restored
 * System stability preserved
   
-![Recovery dashboard](docs/dashboard-Recovery.png)
+![Recovery dashboard](docs/dashboard-Recovery.png) 
 
 This dashboard shows the system state **after removing network chaos**.
 The system recovers **without redeployment** and performance returns to normal.
