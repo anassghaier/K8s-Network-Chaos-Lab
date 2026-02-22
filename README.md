@@ -12,7 +12,7 @@ Université Gustave Eiffel
 ---
 
 ## 🎯 Project Overview
-
+Developed as part of the “Network & Cloud” practical coursework (M2 TRT).
 This project is a **Network & Cloud practical lab** dedicated to **network-level chaos engineering in Kubernetes**.
 
 A microservices application is deployed on a local Kubernetes cluster.  
