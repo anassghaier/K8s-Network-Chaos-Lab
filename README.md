@@ -309,7 +309,3 @@ By combining **Docker, Kubernetes, Linux networking tools, and chaos engineering
 
 ---
 
-```
-
----
-
