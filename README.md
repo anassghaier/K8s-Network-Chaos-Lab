@@ -1,5 +1,5 @@
 ```md
-# Kubernetes Network Chaos Lab
+# Kubernetes Network Chaos Lab  
 ### Network Chaos Engineering & Observability on Kubernetes
 
 ---
@@ -11,16 +11,19 @@ Université Gustave Eiffel
 
 ---
 
-## 🎯 Project Purpose
+## 🎯 Project Overview
 
-This project is a **Network & Cloud practical lab** focused on **network-level chaos engineering in Kubernetes**.
+This project is a **Network & Cloud practical lab** dedicated to **network-level chaos engineering in Kubernetes**.
 
-A microservices application is deployed on a local Kubernetes cluster, where **controlled network latency** is injected in order to:
-- evaluate application performance degradation,
-- verify SLA violations,
-- and observe system recovery **without redeployment**.
+A microservices application is deployed on a local Kubernetes cluster.  
+**Controlled network latency** is then injected to evaluate:
 
-All experiments are **automated, reproducible and observable**.
+- application performance degradation,
+- SLA violations,
+- system resilience and recovery **without redeployment**.
+
+The application code remains **unchanged** during all experiments.  
+All steps are **automated, reproducible and observable**.
 
 ---
 
@@ -40,9 +43,10 @@ Network Chaos (tc netem on API Pod)
 
 ```
 
+**Key points**
 - Chaos is injected **only at the network layer**
-- Application code remains unchanged
-- Kubernetes handles orchestration and recovery
+- No modification of application source code
+- Kubernetes ensures orchestration and recovery
 
 ---
 
@@ -57,8 +61,9 @@ Network Chaos (tc netem on API Pod)
 | Backend | Python |
 | Frontend | Nginx |
 | Automation | Bash |
+| Observability | Web dashboard |
 | Results | CSV |
-| Versioning | Git & GitHub |
+| Version control | Git & GitHub |
 
 ---
 
@@ -78,7 +83,7 @@ K8s-Network-Chaos-Lab/
 
 ---
 
-## 🚀 Experiment Workflow (Step-by-Step)
+## 🚀 Experiment Workflow
 
 ### Step 1 — Environment Cleanup (Recommended)
 
@@ -89,7 +94,7 @@ kind delete cluster --name netchaos 2>/dev/null || true
 kind get clusters
 ````
 
-Ensures a **clean and reproducible environment** before each experiment.
+Ensures a **clean and reproducible environment**.
 
 ---
 
@@ -113,8 +118,8 @@ kubectl -n netchaos get svc
 
 Deploys:
 
-* Frontend (Nginx)
-* Backend API (Python)
+* Frontend service (Nginx)
+* Backend API service (Python)
 
 ---
 
@@ -124,7 +129,7 @@ Deploys:
 kubectl -n netchaos port-forward svc/frontend-svc 8080:80
 ```
 
-Access in browser:
+Open in browser:
 
 ```
 http://127.0.0.1:8080
@@ -134,19 +139,19 @@ http://127.0.0.1:8080
 
 ## 📊 Network Chaos Experiments
 
-### Baseline (No Chaos)
+### Baseline — Normal Network Conditions
 
 ```bash
 bash 10-measure.sh baseline
 ```
 
-* Normal latency (~30 ms)
+* Latency ≈ **30 ms**
 * SLA respected
 * CSV generated
 
 ---
 
-### Latency Injection (Chaos)
+### Chaos — Network Latency Injection
 
 ```bash
 bash 06-chaos-latency.sh add
@@ -161,13 +166,13 @@ Injected parameters:
 
 Observed effects:
 
-* Increased response time
+* Significant response time increase
 * SLA violation
 * Degraded user experience
 
 ---
 
-### Recovery Phase
+### Recovery — Chaos Removal
 
 ```bash
 bash 06-chaos-latency.sh del
@@ -175,27 +180,27 @@ bash 10-measure.sh recovery
 ```
 
 * No redeployment required
-* Latency returns to normal
+* Network conditions restored
 * System stability preserved
 
 ---
 
 ## 📈 Results Summary
 
-| Phase    | Avg Latency | Status       |
-| -------- | ----------- | ------------ |
-| Baseline | ~30 ms      | Normal       |
-| Chaos    | ~450–700 ms | SLA Violated |
-| Recovery | ~30–40 ms   | Normal       |
+| Phase    | Average Latency | Status       |
+| -------- | --------------- | ------------ |
+| Baseline | ~30 ms          | Normal       |
+| Chaos    | ~450–700 ms     | SLA Violated |
+| Recovery | ~30–40 ms       | Normal       |
 
-All results are exported as **CSV files** for offline analysis.
+All measurements are exported as **CSV files** for offline analysis.
 
 ---
 
 ## ✅ Key Learning Outcomes
 
-* Network conditions can heavily impact application performance
-* Kubernetes applications can recover **without redeployment**
+* Network conditions can significantly impact application performance
+* Kubernetes services recover without redeployment
 * Chaos Engineering is effective for resilience validation
 * Observability is essential for performance analysis
 
@@ -207,7 +212,7 @@ All results are exported as **CSV files** for offline analysis.
 bash 99-cleanup.sh
 ```
 
-Deletes the cluster and cleans the environment.
+Removes the cluster and cleans the environment.
 
 ---
 
@@ -215,4 +220,4 @@ Deletes the cluster and cleans the environment.
 
 This project demonstrates how **network-level chaos in Kubernetes** directly affects application performance and user experience.
 
-By combining **Docker, Kubernetes, Linux networking tools and chaos engineering**, this lab provides a realistic and reproducible framework for **Network & Cloud experimentation**.
+By combining **Docker, Kubernetes, Linux networking tools and Chaos Engineering**, this lab provides a realistic and reproducible framework for **Network & Cloud experimentation and resilience analysis**.
