@@ -201,8 +201,7 @@ bash 10-measure.sh baseline
 
 ![Baseline dashboard](docs/dashboard-baseline.png)
 
-<sub><b>Figure —</b> Tableau de bord en conditions réseau normales (baseline).  
-Le temps de réponse moyen est d’environ 37 ms, respectant l’objectif de SLA (&lt;250 ms).</sub>
+<sub> Le temps de réponse moyen est d’environ 37 ms, respectant l’objectif de SLA (&lt;250 ms).</sub>
 ---
 
 ### Chaos réseau — Injection de latence
