@@ -229,6 +229,9 @@ bash 10-measure.sh recovery
 
 ![Recovery dashboard](docs/dashboard-recovery.png)
 
+Une fois la latence supprimée, le système retrouve un comportement normal.
+Le temps de réponse revient autour de 30–40 ms, confirmant la capacité de récupération du système sans redéploiement des services.
+
 ---
 
 ## Résultats obtenus
