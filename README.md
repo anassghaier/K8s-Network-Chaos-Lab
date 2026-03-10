@@ -117,7 +117,7 @@ K8s-Network-Chaos-Lab
 ### Nettoyage de l'environnement
 
 ```bash
-cd ~/Pictures/K8s-Network-Chaos-Lab_FINAL/scripts
+cd K8s-Network-Chaos-Lab_FINAL/scripts
 
 pkill -f "kubectl.*port-forward" 2>/dev/null || true
 kind delete cluster --name netchaos 2>/dev/null || true
