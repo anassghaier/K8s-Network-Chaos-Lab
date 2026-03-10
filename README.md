@@ -201,8 +201,8 @@ bash 10-measure.sh baseline
 
 ![Baseline dashboard](docs/dashboard-baseline.png)
 
-<sub>Cette capture montre l’application en fonctionnement dans des conditions réseau normales.  
-Le temps de réponse est d’environ 37 ms, ce qui respecte l’objectif de SLA (&lt;250 ms), et l’état du système est NORMAL.</sub>
+<sub><b>Figure —</b> Tableau de bord en conditions réseau normales (baseline).  
+Le temps de réponse moyen est d’environ 37 ms, respectant l’objectif de SLA (&lt;250 ms).</sub>
 ---
 
 ### Chaos réseau — Injection de latence
