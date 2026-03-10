@@ -201,7 +201,7 @@ bash 10-measure.sh baseline
 
 ![Baseline dashboard](docs/dashboard-baseline.png)
 
-Cette capture montre l’application en fonctionnement dans des conditions réseau normales.
+Cette capture montre l’application en fonctionnement dans des conditions réseau normales.  
 Le temps de réponse est d’environ 37 ms, ce qui respecte l’objectif de SLA (<250 ms), et l’état du système est NORMAL.
 ---
 
