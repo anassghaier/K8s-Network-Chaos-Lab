@@ -215,6 +215,9 @@ bash 10-measure.sh latency
 
 ![Chaos dashboard](docs/dashboard-chaos.png)
 
+Après l’injection de latence réseau avec tc netem, le temps de réponse augmente fortement (≈500 ms).
+Le tableau de bord indique CHAOS IMPACT, montrant une dégradation visible des performances et une violation du SLA.
+
 ---
 
 ### Recovery — Suppression du chaos
