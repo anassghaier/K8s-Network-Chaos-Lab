@@ -5,13 +5,12 @@
 [![Docker](https://img.shields.io/badge/Containers-Docker-blue)](https://www.docker.com/)
 [![Python](https://img.shields.io/badge/Backend-Python-green)](https://www.python.org/)
 [![Linux](https://img.shields.io/badge/OS-Linux-black)](https://www.kernel.org/)
-[![License](https://img.shields.io/badge/License-Academic-lightgrey)]()
 
-Network Chaos Engineering and Observability Lab on Kubernetes
+Laboratoire d'expérimentation de **Chaos Engineering réseau sur Kubernetes** démontrant l'impact de la latence réseau sur les performances d'une architecture microservices.
 
 ---
 
-## Author
+## Auteur
 
 Anas Sghaier  
 Master 2 – Technologies et Réseaux des Télécommunications (TRT)  
@@ -19,38 +18,40 @@ Université Gustave Eiffel
 
 ---
 
-## Project Overview
+## Présentation du projet
 
-This project was developed as part of the **Network & Cloud laboratory (Master 2 TRT)**.
+Ce projet a été réalisé dans le cadre du module **Network & Cloud** du Master 2 TRT.
 
-The objective is to study the **impact of network perturbations on microservices deployed on Kubernetes** using **Chaos Engineering techniques**.
+L'objectif est d'étudier **l'impact des perturbations réseau sur une architecture microservices déployée sur Kubernetes** en utilisant des techniques de **Chaos Engineering**.
 
-A microservice architecture composed of:
+L'architecture déployée comprend :
 
-- a frontend (Nginx)
-- a backend API (Python)
+- un **frontend Nginx**
+- une **API backend développée en Python**
 
-is deployed on a local Kubernetes cluster created with **kind**.
+Ces services sont exécutés sur un **cluster Kubernetes local créé avec kind**.
 
-Controlled network latency is injected using **tc netem** in order to evaluate:
+Une latence réseau artificielle est ensuite injectée à l'aide de l'outil Linux **tc netem** afin d'observer :
 
-- application performance degradation
-- SLA violations
-- system resilience and recovery without redeployment
+- la dégradation des performances applicatives
+- les violations de SLA
+- la capacité de récupération du système **sans redéploiement des services**
 
-All experiments are automated, reproducible and observable through a monitoring dashboard.
+Les expériences sont **automatisées, reproductibles et observables via un tableau de bord web**.
 
 ---
 
 ## Architecture
 
+Le laboratoire reproduit une architecture microservices simple dans laquelle une perturbation réseau est injectée au niveau du backend.
+
 ```mermaid
 flowchart LR
-    User[User Browser]
+    User[Navigateur utilisateur]
     PF[kubectl port-forward]
     Frontend[Nginx Frontend]
-    Backend[Python API Backend]
-    Chaos[tc netem Network Chaos]
+    Backend[API Backend Python]
+    Chaos[Injection de latence tc netem]
 
     User --> PF
     PF --> Frontend
@@ -58,26 +59,32 @@ flowchart LR
     Backend --> Chaos
 ```
 
+Principes importants :
+
+- Le chaos est injecté **uniquement au niveau réseau**
+- Le code applicatif **reste inchangé**
+- Kubernetes assure l'orchestration et la stabilité des services
+
 ---
 
-## Technologies
+## Technologies utilisées
 
-| Category | Tools |
+| Catégorie | Outils |
 |--------|------|
-| OS | Kali Linux |
-| Containers | Docker |
+| Système | Kali Linux |
+| Conteneurs | Docker |
 | Orchestration | Kubernetes (kind) |
-| Networking | tc, netem |
+| Réseau | tc, netem |
 | Backend | Python |
 | Frontend | Nginx |
-| Automation | Bash |
-| Observability | Web dashboard |
-| Results | CSV |
-| Version Control | Git & GitHub |
+| Automatisation | Bash |
+| Observabilité | Tableau de bord Web |
+| Résultats | Fichiers CSV |
+| Versioning | Git & GitHub |
 
 ---
 
-## Repository Structure
+## Structure du dépôt
 
 ```
 K8s-Network-Chaos-Lab
@@ -105,9 +112,9 @@ K8s-Network-Chaos-Lab
 
 ---
 
-## Experiment Workflow
+## Déroulement des expérimentations
 
-### Environment cleanup
+### Nettoyage de l'environnement
 
 ```bash
 cd ~/Pictures/K8s-Network-Chaos-Lab_FINAL/scripts
@@ -117,17 +124,25 @@ kind delete cluster --name netchaos 2>/dev/null || true
 kind get clusters
 ```
 
+Cette étape garantit un environnement propre et reproductible.
+
 ---
 
-### Cluster creation
+### Création du cluster Kubernetes
 
 ```bash
 bash 02-create-kind-cluster.sh
 ```
 
+Création d'un cluster Kubernetes local nommé :
+
+```
+netchaos
+```
+
 ---
 
-### Deployment
+### Déploiement de l'application
 
 ```bash
 bash 03-deploy.sh
@@ -135,9 +150,11 @@ kubectl -n netchaos get pods -o wide
 kubectl -n netchaos get svc
 ```
 
+Cette étape vérifie que les services et pods sont correctement déployés.
+
 ---
 
-### Detect frontend port
+### Détection du port réel du frontend
 
 ```bash
 kubectl -n netchaos exec deploy/frontend -- sh -c 'wget -qO- http://127.0.0.1:80/ >/dev/null && echo "FRONT OK sur 80" || echo "PAS sur 80"'
@@ -149,7 +166,9 @@ kubectl -n netchaos exec deploy/frontend -- sh -c 'wget -qO- http://127.0.0.1:80
 
 ---
 
-### Fix service
+### Correction dynamique du service Kubernetes
+
+Si le frontend utilise le port 80 :
 
 ```bash
 kubectl -n netchaos patch svc frontend-svc --type='json' -p='[
@@ -160,21 +179,21 @@ kubectl -n netchaos patch svc frontend-svc --type='json' -p='[
 
 ---
 
-### Access application
+### Accès à l'application
 
 ```bash
 kubectl -n netchaos port-forward svc/frontend-svc 8080:80
 ```
 
-Open:
+Accès via :
 
 http://127.0.0.1:8080
 
 ---
 
-## Chaos Experiments
+## Expériences de Chaos Engineering
 
-### Baseline
+### Baseline — Conditions normales
 
 ```bash
 bash 10-measure.sh baseline
@@ -184,7 +203,7 @@ bash 10-measure.sh baseline
 
 ---
 
-### Network Chaos
+### Chaos réseau — Injection de latence
 
 ```bash
 bash 06-chaos-latency.sh add
@@ -195,7 +214,7 @@ bash 10-measure.sh latency
 
 ---
 
-### Recovery
+### Recovery — Suppression du chaos
 
 ```bash
 bash 06-chaos-latency.sh del
@@ -206,28 +225,49 @@ bash 10-measure.sh recovery
 
 ---
 
-## Results
+## Résultats obtenus
 
-| Phase | Latency | Status |
-|------|--------|--------|
+| Phase | Latence moyenne | Statut |
+|------|----------------|--------|
 | Baseline | ~30 ms | Normal |
-| Chaos | ~450–700 ms | SLA Violated |
+| Chaos | ~450–700 ms | SLA Violé |
 | Recovery | ~30–40 ms | Normal |
+
+Les mesures sont exportées sous forme de **fichiers CSV** pour analyse.
 
 ![CSV results](docs/csv-results.png)
 
 ---
 
-## Cleanup
+## Compétences démontrées
+
+Ce projet met en évidence les compétences techniques suivantes :
+
+- Déploiement d'un cluster Kubernetes local avec **kind**
+- Déploiement d'une architecture **microservices conteneurisée**
+- Manipulation des **services et pods Kubernetes**
+- Expérimentation réseau avec **tc netem**
+- Mise en œuvre de **Chaos Engineering**
+- Analyse des performances applicatives
+- Automatisation d'expériences avec **scripts Bash**
+- Diagnostic réseau dans un environnement Kubernetes
+- Utilisation de **Docker et Kubernetes pour des tests de résilience**
+- Collecte et analyse de métriques sous forme de **fichiers CSV**
+
+---
+
+## Nettoyage de l'environnement
 
 ```bash
 bash 99-cleanup.sh
 ```
 
+Supprime le cluster Kubernetes et nettoie l'environnement local.
+
 ---
 
 ## Conclusion
 
-This project demonstrates how network perturbations injected in Kubernetes directly impact application performance and user experience.
+Ce laboratoire démontre comment **les perturbations réseau dans Kubernetes influencent directement les performances d'une architecture microservices**.
 
-It provides a reproducible framework for experimentation with **Cloud networking, microservices resilience and chaos engineering**.
+En combinant Kubernetes, Docker, les outils réseau Linux et les principes du Chaos Engineering, ce projet fournit un cadre reproductible pour étudier **la résilience des systèmes distribués dans un environnement cloud**.
