@@ -1,131 +1,203 @@
-```md
-# Kubernetes Network Chaos Lab  
-### Network Chaos Engineering & Observability on Kubernetes
+
+# Kubernetes Network Chaos Lab
+### Chaos Engineering réseau & Observabilité sur Kubernetes
 
 ---
 
-## 👤 Author
+## 👤 Auteur
 **Anas Sghaier**  
 Master 2 – Technologies et Réseaux des Télécommunications (TRT)  
 Université Gustave Eiffel  
 
 ---
 
-## 🎯 Project Overview
-Developed as part of the “Network & Cloud” practical coursework (M2 TRT).
-This project is a **Network & Cloud practical lab** dedicated to **network-level chaos engineering in Kubernetes**.
+## 🎯 Présentation du projet
 
-A microservices application is deployed on a local Kubernetes cluster.  
-**Controlled network latency** is then injected to evaluate:
+Ce projet a été développé dans le cadre du TP **Network & Cloud** du Master 2 TRT.
 
-- application performance degradation,
-- SLA violations,
-- system resilience and recovery **without redeployment**.
+L'objectif est de mettre en place un **laboratoire d'expérimentation de Chaos Engineering au niveau réseau dans Kubernetes** afin d'observer l’impact des perturbations réseau sur une application microservices.
 
-The application code remains **unchanged** during all experiments.  
-All steps are **automated, reproducible and observable**.
+Une application composée de :
 
----
+- un **frontend Nginx**
+- une **API backend en Python**
 
-## 🧱 Architecture Overview
+est déployée sur un **cluster Kubernetes local (kind)**.
 
-```
+Une **latence réseau contrôlée** est ensuite injectée à l'aide de l’outil Linux **tc netem** afin d'évaluer :
 
-User (Browser)
-|
-Port-forward
-|
-Frontend (Nginx)
-|
-Backend API (Python)
-|
-Network Chaos (tc netem on API Pod)
+- la dégradation des performances applicatives
+- les violations de SLA
+- la capacité de récupération du système **sans redéploiement**
 
-```
+Toutes les expérimentations sont :
 
-**Key points**
-- Chaos is injected **only at the network layer**
-- No modification of application source code
-- Kubernetes ensures orchestration and recovery
+- **automatisées**
+- **reproductibles**
+- **observables via un dashboard**
 
 ---
 
-## 🛠 Technologies Used
+## 🧱 Architecture du système
 
-| Category | Tools |
-|-------|------|
+User (Browser)  
+│  
+Port-forward (kubectl)  
+│  
+Frontend (Nginx)  
+│  
+Backend API (Python)  
+│  
+Network Chaos (tc netem sur le Pod API)
+
+Principes clés :
+
+- Le chaos est injecté **uniquement au niveau réseau**
+- Le code applicatif **reste inchangé**
+- Kubernetes assure l’orchestration et la stabilité du système
+
+---
+
+## 🛠 Technologies utilisées
+
+| Catégorie | Outils |
+|--------|------|
 | OS | Kali Linux |
-| Containers | Docker |
+| Conteneurs | Docker |
 | Orchestration | Kubernetes (kind) |
-| Networking | tc, netem |
+| Réseau | tc, netem |
 | Backend | Python |
 | Frontend | Nginx |
-| Automation | Bash |
-| Observability | Web dashboard |
-| Results | CSV |
-| Version control | Git & GitHub |
+| Automatisation | Bash |
+| Observabilité | Dashboard Web |
+| Résultats | CSV |
+| Versioning | Git & GitHub |
 
 ---
 
-## 📁 Repository Structure
+## 📁 Structure du dépôt
 
 K8s-Network-Chaos-Lab/
-├── app/        # Frontend & API source code
-├── k8s/        # Kubernetes manifests
-├── scripts/    # Automation & chaos scripts
-├── results/    # CSV measurements
+├── app/        # Code source frontend et backend
+├── k8s/        # Manifests Kubernetes
+├── scripts/    # Scripts d'automatisation et de chaos
+├── results/    # Résultats des expériences (CSV)
 └── README.md
-````
 
 ---
 
-## 🚀 Experiment Workflow
+# 🚀 Déroulement des expériences
 
-### Step 1 — Environment Cleanup (Recommended)
+## 1️⃣ Nettoyage de l’environnement
+
+Avant chaque expérimentation, l’environnement est remis à zéro.
 
 ```bash
-cd scripts
+cd ~/Pictures/K8s-Network-Chaos-Lab_FINAL/scripts
+
 pkill -f "kubectl.*port-forward" 2>/dev/null || true
 kind delete cluster --name netchaos 2>/dev/null || true
 kind get clusters
-````
+```
 
-Ensures a **clean and reproducible environment**.
+Cela permet de garantir :
+
+- un environnement propre
+- aucune session port-forward active
+- aucun cluster résiduel
 
 ---
 
-### Step 2 — Kubernetes Cluster Creation
+## 2️⃣ Création du cluster Kubernetes
 
 ```bash
 bash 02-create-kind-cluster.sh
 ```
 
-Creates a local Kubernetes cluster named **netchaos** using `kind`.
+Création d’un cluster Kubernetes local nommé :
+
+```
+netchaos
+```
 
 ---
 
-### Step 3 — Application Deployment
+## 3️⃣ Déploiement de l'application
 
 ```bash
 bash 03-deploy.sh
-kubectl -n netchaos get pods
+```
+
+Puis vérification :
+
+```bash
+kubectl -n netchaos get pods -o wide
 kubectl -n netchaos get svc
 ```
 
-Deploys:
+Cette étape permet de vérifier :
 
-* Frontend service (Nginx)
-* Backend API service (Python)
+- que les pods sont **Running**
+- que les services Kubernetes sont correctement exposés
 
 ---
 
-### Step 4 — Frontend Access
+## 4️⃣ Test du port réel du frontend
+
+Avant d'exposer le service, on vérifie sur quel port **Nginx écoute réellement dans le conteneur**.
+
+```bash
+kubectl -n netchaos exec deploy/frontend -- sh -c 'wget -qO- http://127.0.0.1:80/ >/dev/null && echo "FRONT OK sur 80" || echo "PAS sur 80"'
+```
+
+```bash
+kubectl -n netchaos exec deploy/frontend -- sh -c 'wget -qO- http://127.0.0.1:8080/ >/dev/null && echo "FRONT OK sur 8080" || echo "PAS sur 8080"'
+```
+
+Cette étape évite un décalage entre :
+
+- le port du conteneur
+- le port du service Kubernetes
+
+---
+
+## 5️⃣ Correction dynamique du Service Kubernetes
+
+Si le frontend utilise **le port 80** :
+
+```bash
+kubectl -n netchaos patch svc frontend-svc --type='json' -p='[
+ {"op":"replace","path":"/spec/ports/0/port","value":80},
+ {"op":"replace","path":"/spec/ports/0/targetPort","value":80}
+]'
+```
+
+Si le frontend utilise **le port 8080** :
+
+```bash
+kubectl -n netchaos patch svc frontend-svc --type='json' -p='[
+ {"op":"replace","path":"/spec/ports/0/port","value":8080},
+ {"op":"replace","path":"/spec/ports/0/targetPort","value":8080}
+]'
+```
+
+Cela illustre la **reconfiguration dynamique du réseau Kubernetes sans redéployer les pods**.
+
+---
+
+## 6️⃣ Accès au frontend
 
 ```bash
 kubectl -n netchaos port-forward svc/frontend-svc 8080:80
 ```
 
-Open in browser:
+ou
+
+```bash
+kubectl -n netchaos port-forward svc/frontend-svc 8080:8080
+```
+
+Puis ouvrir :
 
 ```
 http://127.0.0.1:8080
@@ -133,104 +205,103 @@ http://127.0.0.1:8080
 
 ---
 
-## 📊 Network Chaos Experiments
+# 📊 Expériences de Chaos Engineering
 
-### Baseline — Normal Network Conditions
+## Baseline — Conditions réseau normales
 
 ```bash
 bash 10-measure.sh baseline
 ```
 
-* Latency ≈ **30 ms**
-* SLA respected
-* CSV generated
+Résultats typiques :
 
-  
+- Latence ≈ **30 ms**
+- SLA respecté
+- CSV généré
+
 ![Baseline dashboard](docs/dashboard-baseline.png)
 
-This dashboard shows the system under normal network conditions before any chaos injection.
 ---
 
-### Chaos — Network Latency Injection
+## Chaos — Injection de latence réseau
 
 ```bash
 bash 06-chaos-latency.sh add
+```
+
+Puis mesure :
+
+```bash
 bash 10-measure.sh latency
 ```
 
-Injected parameters:
+Paramètres injectés :
 
-* Latency: **250 ms ± 50 ms**
-* Tool: `tc netem`
-* Target: API pod network interface
+- Latence : **250 ms ± 50 ms**
+- Outil : `tc netem`
+- Cible : **pod API**
 
-Observed effects:
+Effets observés :
 
-* Significant response time increase
-* SLA violation
-* Degraded user experience
+- augmentation du temps de réponse
+- violation du SLA
+- dégradation de l’expérience utilisateur
 
-  
 ![Chaos dashboard](docs/dashboard-chaos.png)
 
-This dashboard shows the system behavior **during network latency injection**.
-The response time increases significantly and the SLA is violated.
 ---
 
-### Recovery — Chaos Removal
+## Recovery — Suppression du chaos
 
 ```bash
 bash 06-chaos-latency.sh del
+```
+
+Puis mesure de récupération :
+
+```bash
 bash 10-measure.sh recovery
 ```
 
-* No redeployment required
-* Network conditions restored
-* System stability preserved
-  
-![Recovery dashboard](docs/dashboard-recovery.png) 
+Le système revient à un état nominal **sans redéploiement**.
 
-This dashboard shows the system state **after removing network chaos**.
-The system recovers **without redeployment** and performance returns to normal.
+![Recovery dashboard](docs/dashboard-recovery.png)
+
 ---
 
-## 📈 Results Summary
+## 📈 Résumé des résultats
 
-| Phase    | Average Latency | Status       |
-| -------- | --------------- | ------------ |
-| Baseline | ~30 ms          | Normal       |
-| Chaos    | ~450–700 ms     | SLA Violated |
-| Recovery | ~30–40 ms       | Normal       |
+| Phase | Latence moyenne | Statut |
+|------|----------------|--------|
+| Baseline | ~30 ms | Normal |
+| Chaos | ~450–700 ms | SLA violé |
+| Recovery | ~30–40 ms | Normal |
 
-All measurements are exported as **CSV files** for offline analysis.
+Toutes les mesures sont exportées sous forme de **fichiers CSV** pour analyse hors ligne.
 
 ![CSV results](docs/csv-results.png)
 
-This screenshot confirms the generation of **CSV measurement files**
-for baseline, chaos and recovery phases, enabling offline analysis.
 ---
 
-## ✅ Key Learning Outcomes
-
-* Network conditions can significantly impact application performance
-* Kubernetes services recover without redeployment
-* Chaos Engineering is effective for resilience validation
-* Observability is essential for performance analysis
-
----
-
-## 🧹 Cleanup
+## 🧹 Nettoyage
 
 ```bash
 bash 99-cleanup.sh
 ```
 
-Removes the cluster and cleans the environment.
+Supprime le cluster et nettoie l’environnement.
 
 ---
 
 ## 🧠 Conclusion
 
-This project demonstrates how **network-level chaos in Kubernetes** directly affects application performance and user experience.
+Ce laboratoire démontre comment **les perturbations réseau dans Kubernetes impactent directement les performances applicatives et l’expérience utilisateur**.
 
-By combining **Docker, Kubernetes, Linux networking tools and Chaos Engineering**, this lab provides a realistic and reproducible framework for **Network & Cloud experimentation and resilience analysis**.
+En combinant :
+
+- Docker
+- Kubernetes
+- les outils réseau Linux (`tc netem`)
+- le Chaos Engineering
+
+ce projet constitue un **environnement réaliste d’expérimentation pour l’analyse de résilience des architectures microservices dans le Cloud**.
